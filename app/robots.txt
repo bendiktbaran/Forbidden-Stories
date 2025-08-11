@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Sitemap: https://forbidden-stories.app/sitemap.xml
+
+
