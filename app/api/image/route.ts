@@ -21,6 +21,66 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Feld 'prompt' ist erforderlich" }, { status: 400 })
     }
 
+    const payload: Record<string, any> = { prompt, negative_prompt, width, height, steps }
+    if (Array.isArray(inputImages) && inputImages.length) {
+      payload.reference_images = inputImages
+      payload.face_swap = true
+    }
+
+    const response = await fetch("https://api.maga.ai/v1/generate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify(payload),
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => "Unbekannter Fehler")
+      return NextResponse.json(
+        { error: "Maga AI-Fehler", details: errorText },
+        { status: response.status || 500 }
+      )
+    }
+
+    let images: string[] = []
+    try {
+      const data = await response.json()
+      images = data.images || data.results || []
+    } catch {
+      images = []
+    }
+
+    return NextResponse.json({ images })
+  } catch (err: any) {
+    return NextResponse.json({ error: err?.message || "Interner Fehler" }, { status: 500 })
+  }
+}
+
+import { NextResponse } from "next/server"
+
+export async function POST(req: Request) {
+  try {
+    const apiKey = process.env.MAGA_API_KEY
+    if (!apiKey) {
+      return NextResponse.json({ error: "MAGA_API_KEY fehlt" }, { status: 500 })
+    }
+
+    const body = await req.json()
+    const {
+      prompt,
+      negative_prompt = "unscharf, hässlich, cartoon, verzerrt",
+      width = 512,
+      height = 768,
+      steps = 30,
+      inputImages,
+    } = body || {}
+
+    if (!prompt || typeof prompt !== "string") {
+      return NextResponse.json({ error: "Feld 'prompt' ist erforderlich" }, { status: 400 })
+    }
+
     // Hinweis: Ein echtes Face-Swap/ControlNet benötigt einen dedizierten Service.
     // Wir leiten optionale Nutzerfotos transparent an die API weiter, falls unterstützt.
     const payload: Record<string, any> = {
