@@ -145,7 +145,8 @@
 
 @layer components {
   .forbidden-glass {
-    @apply bg-black/40 backdrop-blur-xl border border-white/10 shadow-forbidden rounded-xl;
+    @apply bg-black/40 backdrop-blur-xl border border-white/10 rounded-xl;
+    box-shadow: var(--shadow-forbidden);
   }
 
   .passion-gradient {
@@ -161,11 +162,11 @@
   }
 
   .passion-glow {
-    @apply shadow-passion;
+    box-shadow: var(--shadow-passion);
   }
 
   .gold-glow {
-    @apply shadow-gold-glow;
+    box-shadow: var(--glow-gold);
   }
 
   .story-text {
